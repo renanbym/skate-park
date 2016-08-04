@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href='https://fonts.googleapis.com/css?family=Dosis:400,700' rel='stylesheet' type='text/css'>
+    <style media="screen">
+    /*pero #515151*/
+    /*azul #00B4FF*/
+    /*cinza #EEEEEE*/
+    *{
+        margin: 0px;
+        padding: 0px;
+        font-family: 'Dosis', sans-serif;
+    }
+    html, body{
+        width: 100%;
+        height: 100%;
+    }
+    #map{
+        width: 100%;
+        height: calc( 100% - 80px );
+    }
+
+    .form{
+        width: 100%;
+        position: fixed;
+        bottom: 0px;
+        left: 0px;
+        height: 60px;
+        z-index: 999;
+        background-color: #515151;
+        text-align: center;
+        padding: 20px 0px;
+    }
+
+    input[type=text]{
+        width: 500px;
+        height: 30px;
+        border: none;
+        background-color: #ffffff;
+        color: #00B4FF;
+        padding: 0 10px;
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    input[type=submit], .submit{
+        background-color: #00B4FF;
+        height: 30px;
+        text-align: center;
+        padding: 0px 10px;
+        color: #ffffff;
+        display: inline-block;
+        vertical-align: top;
+        border: none;
+        vertical-align: middle;
+        line-height: 30px;
+        font-size: 19px;
+        font-weight: bold;
+    }
+
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div class="form">
+        <form action="">
+            <input type="text" name="address" value="dasa">
+            <div class="submit" id="submit">Buscar</div>
+        </form>
+    </div>
+    <script>
+
+
+
+    var buscar =  document.getElementById("submit");
+    buscar.addEventListener("click", function(){
+
+
+        var address = document.querySelectorAll("input[name=address]")[0]
+
+        getAdress( address.value )
+        address.value = ""
+    });
+
+
+    function initMap() {
+
+        var map;
+
+        this.map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: -25.363, lng: 131.044},
+            zoom: 4
+        });
+
+        this.addMarker( -25.363, 131.044 );
+
+    }
+
+    initMap.prototype.addMarker = function( lat, lng ){
+
+        new google.maps.Marker({
+            map: this.map,
+            position: {lat: lat, lng: lng},
+            title: 'Hello World!'
+        });
+
+    }
+
+    window.maps;
+    function init(){
+        window.maps = new initMap();
+    }
+
+    function sendRequest(url,callback,postData) {
+        var req = createXMLHTTPObject();
+        if (!req) return;
+        var method = (postData) ? "POST" : "GET";
+        req.open(method,url,true);
+        // req.setRequestHeader('User-Agent','XMLHTTP/1.0');
+        if (postData)
+        req.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+        req.onreadystatechange = function () {
+            if (req.readyState != 4) return;
+            if (req.status != 200 && req.status != 304) {
+                callback(req.response, null);
+                return;
+            }
+            callback(null, req.response);
+        }
+        if (req.readyState == 4) return;
+        req.send(postData);
+    }
+
+    var XMLHttpFactories = [
+        function () {return new XMLHttpRequest()},
+        function () {return new ActiveXObject("Msxml2.XMLHTTP")},
+        function () {return new ActiveXObject("Msxml3.XMLHTTP")},
+        function () {return new ActiveXObject("Microsoft.XMLHTTP")}
+    ];
+
+    function createXMLHTTPObject() {
+        var xmlhttp = false;
+        for (var i=0;i<XMLHttpFactories.length;i++) {
+            try {
+                xmlhttp = XMLHttpFactories[i]();
+            }
+            catch (e) {
+                continue;
+            }
+            break;
+        }
+        return xmlhttp;
+    }
+
+    function getAdress( address ){
+
+        var address = address.split(' ').join('+');
+        sendRequest('https://maps.googleapis.com/maps/api/geocode/json?address='+address+'&key=AIzaSyCPH8b61WNYRLZOzXXUJ8BXNEovi89D2G8', function(err, response){
+            var json = JSON.parse(response)
+            var geo = json.results[0].geometry.location;
+
+            window.maps.addMarker( geo.lat, geo.lng );
+        })
+    }
+
+    setTimeout(function(){
+
+        getAdress('Rua Ibiracu 166 Vila Madalena Sao Paulo');
+
+    }, 5000 )
+
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCPH8b61WNYRLZOzXXUJ8BXNEovi89D2G8&callback=init" async defer></script>
+</body>
+</html>
